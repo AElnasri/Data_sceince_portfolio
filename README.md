@@ -23,8 +23,7 @@ Feel free to fork this repository or use the code for your own projects.
 
 ## Results
 
-You can view the rendered R Markdown "file:///C:/Users/arwae/OneDrive/Documents/Machine%20learning/Supervised_learning/Logistic-Reg/Titanic_Logistic_Regression.html"
-
+You can view the rendered R Markdown 
 ## Notes
 
 - Make sure to have the necessary R packages installed (specified in the R Markdown file).
