@@ -15,13 +15,12 @@ library(ggplot2)
 library(caret)
 library(tidyverse)
 library(corrplot)
-#file:///C:/Users/arwae/OneDrive/Documents/Machine%20learning/Supervised_learning/Logistic-Reg/logisticGithub.html
 
 ```
 
 ## Upload data
 ```{r}
-setwd("C:/Users/arwae/OneDrive/Documents/Machine learning/Supervised_learning/Logistic-Reg/Assignment4logisticReg")
+
 
 log_data<-read.csv("train.csv")
 test_data<-read.csv("test.csv")
