@@ -21,7 +21,6 @@ library(caTools)
 
 # # Upload data
 ```{r}
-setwd("C:/Users/arwae/OneDrive/Documents/Machine learning/Supervised_learning/linear Reg/Arwa'sgithub-linearREG")
 
 dataset <- read_csv("Salary_Data.xls")
 
@@ -45,14 +44,14 @@ hist(dataset$Salary)
 # No Outliers or Influential Points
 
 correlation<- cor(dataset$YearsExperience,dataset$Salary)
-# There is a high correlation between the two variables
+# There is a high correlation between "YearsExperience" and "Salary"
 
 # Visualizing Dataset
 dataset %>%
   ggplot(aes(YearsExperience, Salary))+
   geom_point()
 
-# There is a linear relationship between the independent and dependent variables.
+# There is a linear relationship between the "YearsExperience" and "Salary".
 
 ```
 
