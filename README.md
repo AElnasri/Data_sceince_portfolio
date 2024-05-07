@@ -1,7 +1,14 @@
 # Data_science_portfolio
 A collection showcasing my journey in data science academic projects, self-learning initiatives, and passion-driven explorations. Dive into the world of data insights through R markdown files and through Jupyter notebooks .
 
-#  Ontario Libraries Insights:
+Projects in this folder are:
+1. Ontario Libraries Insights.
+2.  Simple Linear Regression.
+3. Titanic Logistic Regression Model.
+
+
+
+#  1. Ontario Libraries Insights:
 ## Introduction
 
 In the 21st century, Ontario libraries are faced with the challenge of ensuring successfully achieving their mission of equity of access to information and contributing to education, literacy, and life-long learning in their communities. In this analysis, the standardized metric to compare Ontario libraries' equality of access is operating revenue per active card holder. This analysis aims to gain three insights around this metric and use the findings to give recommendations to improve Ontario libraries in the future.  
@@ -55,11 +62,42 @@ Additional analysis is required to comprehend the wide variety and extreme value
 Invest more in Electronic materials as an important resource of digital information in the 21st century to evolve the users needs and technological advancements.
 
 
+# 2. Simple Linear Regression:
+Title: Applying Simple Linear Regression to Salary Dataset
+
+Introduction:
+
+In this project, I applied simple linear regression to a salary dataset to explore the relationship between years of experience and salary. The dataset contains 30 observations with two columns: Years of Experience and Salary. I utilized the linear regression model to analyze and visualize the relationship between these variables.
+
+Dataset:
+
+The dataset used for this analysis can be accessed from Kaggle: https://www.kaggle.com/code/iamravi1/salary-data/input
+Methodology:
+
+   1. Data Preparation: I started by loading the dataset and exploring its structure and summary statistics to gain insights into the data.
+   2. Data Visualization: Next, I created visualizations such as scatter plots to visualize the relationship between years of experience and salary.
+   3. Train-Test Split: Before building the linear regression model, I split the dataset into training and testing sets. This allows for the evaluation of the model's performance on unseen data.
+   4. Linear Regression Model: Using the lm() function in R, I fitted a simple linear regression model to predict salary based on years of experience.
+   5. Model Analysis: I analyzed the coefficients of the linear regression model to understand the relationship between the predictor and the response variable. 
+   Additionally, I evaluated the model's performance using metrics such as RMSE.
+
+Results:
+
+The linear regression analysis revealed a significant positive relationship between years of experience and salary. 
+The coefficient of the predictor variable (years of experience) was found to be 9152.3 , indicating that, on average, for each additional year of experience, the salary increased by 9152.3 units.
+
+The model achieved a Root Mean Square Error (RMSE) of 7686.788, suggesting that the model's predictions were 7686.788.
+Conclusion:
+
+In conclusion, the simple linear regression analysis provided insights into the relationship between years of experience and salary. 
+The results suggest that years of experience have a significant impact on salary, with higher experience generally associated with higher salaries. 
+This analysis can be valuable for organizations in making decisions related to employee compensation and career growth.
+
   
 
 
 Logistic Regression:
-# Titanic Logistic Regression Model
+# 3. Titanic Logistic Regression Model
 
 This repository contains the code and analysis for applying a logistic regression model to the Titanic dataset.
 
