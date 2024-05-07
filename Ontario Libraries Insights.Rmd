@@ -1,0 +1,599 @@
+---
+title: "Ontario Libraries Insights"
+author: "Arwa Elnasri"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+# Introduction
+
+In the 21st century, Ontario libraries are faced with the challenge of ensuring successfully achieving their mission of equity of access to information and contributing to education, literacy, and life-long learning in their communities. In this analysis, the standardized metric to compare Ontario libraries' equality of access is operating revenue per active card holder. This analysis aims to gain three insights around this metric and use the findings to give recommendations to improve Ontario libraries in the future.  
+
+The number of active card holders is an important factor in measuring the equity of access.
+The first insight underscores instances where libraries exhibit an absence of active cardholders. The second finding highlights libraries in which the growth rate of active cardholders does not align with the corresponding growth rate of operating revenue. As Electronic materials an important resource of digital information in the 21st, the last insight reveals the increase of the metric and the corresponding increase in number of the electronic materials (e_material) and number of E_circulations.  
+
+
+
+
+## Data selection 
+
+The data is from Ontario Public Library statistics. The data is self-reported data from approximately 380 public libraries, First Nation public libraries and contracting organizations. The data comes in CSV and xlsx format.   
+
+In this project, the selected data is from the survey years in the range of 2015 to 2022.
+The measured data selected (columns) for this project are:  
+*  "A1.14  No. of Active Library Cardholders" 
+*  "B2.9  Total Operating Revenues"  
+*  "G1.1.2.W  All circulation for E-books, downloadable audio books, music and video"  
+*  'B4.01.1  General (Include all physical items that are not electronic, e.g. books, periodicals, etc.)' [^note]  
+* "B4.01.2  Electronic (e.g. electronic subscriptions and other databases, downloadable media, gaming  software, Playaway, DVDs, and e-resources)"[^note]  
+*"P1.1  Resident Population Served"  
+  
+The categorical data selected (columns) for this project are:   
+* "Library Full Name"  
+* "Library Number"  
+* "Survey Year From"   
+* "A1.10 City/Town"  
+  
+
+
+
+### Assumptions:  
+
+Assume that historical data for Ontario libraries is accurate and sufficiently comprehensive for analysis. 
+
+Assume each library serves a different number of active card holders, which can be a proxy to the area that they service and its population.
+
+Assume that the standardized metric to compare libraries across Ontario is operating revenue per active card holder.  
+  
+*** 
+
+
+```{r include=FALSE}
+
+
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(readxl)
+
+library_2022 <- read_excel("C:/Users/arwae/Downloads/ontario_public_library_statistics_2022_open_data(1).xlsx", skip = 1)
+library_2021 <- read_csv("C:/Users/arwae/Downloads/2021_ontario_public_library_statistics_open_data.csv")
+library_2020 <- read_csv("C:/Users/arwae/Downloads/2020_ontario_public_library_statistics_open_data.csv")
+library_2019 <- read_excel("C:/Users/arwae/Downloads/data_2019(1).xlsx")
+library_2018 <- read_csv("https://files.ontario.ca/opendata/ontario_public_library_statistics_open_data_2018.csv", skip = 1)
+library_2017 <- read_csv("https://files.ontario.ca/opendata/ontario_public_library_statistics_open_data_july_2019_rev1.csv")
+library_2016 <- read_csv("https://files.ontario.ca/opendata/ontario_public_library_statistics_open_data_2016.csv")
+library_2015 <- read_csv("https://files.ontario.ca/opendata/2015_ontario_public_library_statistics_open_data_dec_2017rev.csv")
+
+#Select columns 
+
+selected_columnst <- c("Library Full Name","Library Number","Survey Year From","A1.10 City/Town",
+                       "A1.14  No. of Active Library Cardholders","B2.9  Total Operating Revenues", 
+                       'G1.1.2.W  All circulation for E-books, downloadable audio books, music and video',
+                       'G1.1.3.W  Total circulation of all library materials',
+                       'G1.1.1.W  All circulation except E-books, downloadable audio books, music and video',
+                       'B4.01.1  General (Include all physical items that are not electronic, e.g. books, periodicals, etc.)',
+                       'B4.01.2  Electronic (e.g. electronic subscriptions and other databases, downloadable media, gaming  software, Playaway, DVDs, and e-resources)','P1.1  Resident Population Served')
+
+
+library_2022_subset <- library_2022 %>% select (selected_columnst)
+library_2021_subset <- library_2021 %>% select (selected_columnst)
+library_2020_subset <- library_2020 %>% select (selected_columnst)
+library_2019_subset <- library_2019 %>% select (selected_columnst)
+library_2018_subset <- library_2018 %>% select (selected_columnst)
+library_2017_subset <- library_2017 %>% select (selected_columnst)
+library_2016_subset <- library_2016 %>% select (selected_columnst)
+library_2015_subset <- library_2015 %>% select (selected_columnst)
+
+#combine datasets using rbind:
+
+libraries_selected <- rbind(library_2015_subset, library_2016_subset, library_2017_subset,library_2018_subset, library_2019_subset,library_2020_subset,library_2021_subset,library_2022_subset)
+
+#rename the selected columns
+
+libraries_data <- libraries_selected %>% 
+  rename(library_full_name="Library Full Name",
+  library_number="Library Number",
+  survey_year="Survey Year From",
+  city="A1.10 City/Town",
+  active_cardholders="A1.14  No. of Active Library Cardholders",
+  operating_revenues="B2.9  Total Operating Revenues",
+  E_circulation= 'G1.1.2.W  All circulation for E-books, downloadable audio books, music and video',
+  total_circulation='G1.1.3.W  Total circulation of all library materials',
+  not_e_circulation='G1.1.1.W  All circulation except E-books, downloadable audio books, music and video',
+  material='B4.01.1  General (Include all physical items that are not electronic, e.g. books, periodicals, etc.)',
+  e_material='B4.01.2  Electronic (e.g. electronic subscriptions and other databases, downloadable media, gaming  software, Playaway, DVDs, and e-resources)',
+  population='P1.1  Resident Population Served')
+
+
+#check for Na
+
+any(is.na(libraries_data))
+na_rows<-libraries_data[!complete.cases(libraries_data),]
+na_rows
+
+#all the values in this row are NA so we will just delete it
+libraries_data<- na.omit(libraries_data)
+
+#save "survey_year" as a factor
+libraries_data$survey_year<-as.factor(libraries_data$survey_year)
+
+#create the new column "revenue_cardholders" which is  (total operating Revenue / number of active card holders)
+
+metric_library<-libraries_data %>% mutate(revenue_cardholders= operating_revenues/active_cardholders)
+head(metric_library)
+
+#This code to format numbers:
+percent<- function(x){format(x, digits=4)
+percentage <- sprintf("%.2f%%",x )
+  return(percentage)}
+
+```
+  
+  
+  
+  
+
+
+## Insight 1 : 18.11%% of Ontario libraries don't have any active card holders from 2015 until 2022
+```{r}
+#In this insight  the libraries that do not have active card holders are explored
+#A. What is the percentage of libraries that have no active card holders?
+#B. Do those libraries have materials (physical or electronic)?
+#C. What is their avg operating revenue?
+#D. Does the number of active card holders for these libraries increase?
+  
+
+#This table contain the dataset 
+head(metric_library)
+
+#There are libraries that do not have any active card holders which generate inf for the metric column (i.e total operating Revenue / number of active card holders))
+summary(metric_library$revenue_cardholders)
+view(head(metric_library$revenue_cardholders))
+
+#create a new column "have_cardholders" that has value = 'Yes' if the library has active card holders and 'No' if the library does not have any active card holders.
+cardholders_categoty<- metric_library%>% mutate(have_cardholders=ifelse(active_cardholders>0,'Yes','No'))
+
+cardholders_categoty$have_cardholders<-as.factor(cardholders_categoty$have_cardholders)
+cardholders_categoty$have_cardholders<-factor(cardholders_categoty$have_cardholders, levels = c('Yes', 'No'))
+
+
+
+#A. what is the percentage of libraries that have no active card holders?
+# percentage of libraries that do not have card holders(mentioned at least once over the selected eight years)
+number_each_cat<-cardholders_categoty%>% 
+  group_by(have_cardholders)%>%
+  count()
+
+no_ch_percentage<-percent((min(number_each_cat$n)/(min(number_each_cat$n)+max(number_each_cat$n)))*100)
+
+#The proportion of libraries that have no card holders (mentioned at least once over the selected eight years)is:
+no_ch_percentage
+
+
+# The following plot shows the percentage:
+ggplot(cardholders_categoty, aes(x =factor(1), fill = have_cardholders)) +
+  geom_bar(width = 1, position = "fill") +
+  labs(x='Having Card Holders')+
+   scale_fill_manual(values = c("cyan3","tomato1"))+
+  labs(title='Proportion of Libraries with No Cardholders',
+       subtitle = 'For Libraries mentioned at least once from 2015 to 2022')+
+  geom_text(aes(label= percent((min(n)/(min(n)+max(n)))*100),y=0.1), data= number_each_cat)+
+  coord_polar("y") 
+
+
+
+#List of libraries that have no card holders:   
+no_cardholders<- cardholders_categoty%>%
+  filter(have_cardholders=='No')
+head(no_cardholders)
+
+#The following code is to get number of libraries that does not have active card holders:
+no_cardholders%>%
+  group_by(library_number)%>%
+  count()%>%
+  nrow()
+
+#List of libraries and how many time they mentioned in the range of the survey years (2015-2022):    
+total_libraries<-cardholders_categoty%>%
+  group_by(library_number)%>%
+  count()
+
+head(total_libraries$n)
+#Some libraries have not included in the all survey years (8 years), so will exclude them.
+included_total_libraries<-total_libraries%>%
+  filter(n==8)
+
+
+#The following code is to list of libraries with no card holders and have been mentioned in the ALL eight years:
+no_ch_libraries<- no_cardholders%>%
+  group_by(library_number)%>%
+  count()%>%
+  filter(n==8)
+
+
+#To get the percent of Ontario libraries (mentioned in the all 8 years) that do not have any card active card holders from 2015 until 2022(n=8 years) over all libraries: 
+percentage_of_libraries_no_cardholdres<- (nrow(no_ch_libraries)/nrow(included_total_libraries))*100
+percent(percentage_of_libraries_no_cardholdres)
+
+
+
+
+
+#B. Does those libraries has material?
+no_cardholders%>% filter(material>0)
+#These libraries do not have any physical material
+
+no_cardholders%>% filter(e_material>0)
+#These libraries do not have any electronic material
+
+
+#C. what is their avg operating revenue?
+
+summary(no_cardholders$operating_revenues)
+  #Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   # 248    1225    3581   29028   25318  336843 
+  
+  
+variation<-sd(no_cardholders$operating_revenues)  
+variation
+#A high SD indicates great variability in data. These libraries have varied range of operating revenues
+
+
+
+#compare the population of no card holders libraries with the population of libraries with card holders:
+
+
+metric_library_ch<- metric_library %>% 
+  filter(active_cardholders>0)
+summary(no_cardholders$population)
+max(cardholders_categoty$population)
+ 
+#comparing with libraries with card holders, libraries with no card holders have relatively low population
+
+
+# Do other libraries increased their active card holders with years or they are just not included in all survey years?
+
+#To answer this question:
+#A I select these libraries that mention less than 8 times with 0 active card holders:
+#list of libraries mentioned less than 8 times as no card holders libraries:
+other_libraries<-no_cardholders%>%
+  group_by(library_number)%>%
+  count()%>%
+  filter(n<8)
+
+head(other_libraries)
+#There are 13 libraries mentioned less than 8 times as libraries with no card holders
+
+#B. Join these libraries in all years to see if they have any card holders over years.filter to if there is any increases of active card holders
+
+any_increase_cardholders<-other_libraries%>%
+  left_join(metric_library, by='library_number')%>%
+  filter(active_cardholders>0)
+any_increase_cardholders
+
+#No increase
+
+
+
+#there are 13 libraries 
+##The 13 libraries also don't have any cardholders, they are just new libraries after 2015/ or not included in all survey years
+#Since there are no increase if active card holders, probably these libraries could have other purpose than having active card holders
+
+#compare proportions across groups
+#select libraries that included in the all survey years(2015-2022) (by exclude libraries with no card holders and mentioned less than 8 times):
+all_years_libraries<-total_libraries%>%
+  anti_join(other_libraries, by='library_number')
+####
+ 
+all_years_libraries<-included_total_libraries%>% left_join(cardholders_categoty, by='library_number')
+
+
+all_years_libraries$proportions
+proportion<-percent(percentage_of_libraries_no_cardholdres)
+
+all_years_libraries %>%
+  ggplot (aes(x=survey_year, fill=have_cardholders))+
+  geom_bar( position = "fill")+
+  scale_fill_manual(values = c("cyan3","tomato1"))+
+  labs(x='Survey Year',
+       y= 'Proportion',
+       color='Have card Holders',
+       title='Proportion of Libraries with No Active Card Holders Across Survey Years',
+       subtitle = 'For libraries that included in the all survey years')+
+  geom_hline(yintercept = 0.1709,)+
+  geom_text(aes(label='17.09%', x=4.5, y= 0.1709 ))
+      
+
+#There are no increase of the number of active card holders for libraries with no active card holders over years. That support the assumption of these libraries could be for other purpose than having card holders.
+
+#libraries with no cardholder has no materials and it could be for other purpose than getting active card holders, like providing community Programs and Services or specialized libraries for research or any other reason.To improve the equality of access(revenue/cardholdre), a suggestion to investigate the expenses of the operating revenue for those libraries.
+
+```
+  
+Libraries with no cardholders typically exhibit a low population and absence of both physical and electronic materials. There is no observed increase in the number of active cardholders over the years for these libraries. The purpose of such libraries may extend beyond acquiring active cardholders; they might focus on providing community programs and services or other purposes. Furthermore, the operating revenue of these libraries demonstrates a substantial degree of variability.
+  
+<br>
+<br>
+<br>
+
+
+## Insight2: 20.07% of Ontario libraries their growth rate of active cardholders do not align with the corresponding growth rate of their operating revenue 
+
+```{r}
+#Does the rate of the increase of active card holders proportional with the increase of the operating revenue for libraries?
+
+
+# select libraries with active card holders and survey year 2015 and 2022:
+selected_libraries_cardholders<-metric_library%>%
+  filter( active_cardholders>0 & (survey_year=='2015' | survey_year=='2022'))
+
+
+#tidy data to represent number of active card holders for each year in a separate column, then create a new column to measure the increase rate of active card holders from 2015 to 2022. Arrange them from the smallest active card holders rate:
+cardholers_years <- selected_libraries_cardholders %>% select(library_number,survey_year,active_cardholders)%>%
+  group_by(library_number)%>% 
+  pivot_wider(names_from = survey_year, values_from = active_cardholders, names_prefix ="cardholders_")%>%
+  mutate(cardholders_in_rate= ((cardholders_2022-cardholders_2015)/cardholders_2015)*100)%>%
+  arrange(cardholders_in_rate)
+
+
+#tidy data to represent total operating revenue for each year in a separate column, then create a new column to measure the increase rate of operating revenue from 2015 to 2022. Arrange them from the smallest operating revenue rate:
+revenue_years <- selected_libraries_cardholders %>% select(library_number,survey_year,operating_revenues)%>%
+  group_by(library_number)%>% 
+  pivot_wider(names_from = survey_year, values_from = operating_revenues, names_prefix ="operating_revenue_")%>%
+  mutate(operating_revenue_in_rate= ((operating_revenue_2022 - operating_revenue_2015)/operating_revenue_2015)*100)%>%
+  arrange(operating_revenue_in_rate)
+
+
+#create a new table to join library number with the increase rate of active card holders,  and the increase rate operating revenue.
+compare_increase<-cardholers_years%>%
+  left_join(revenue_years, by='library_number')%>%
+  select(library_number, cardholders_in_rate,operating_revenue_in_rate)%>% 
+  arrange(desc(cardholders_in_rate))
+head(compare_increase)
+
+
+#create a new column to subtract the increase rate of the operating revenue from the increase rate of active card holders, then select libraries that increase rate of active card holders more than operating revenue(i.e negative sign)
+libraries_need_increase<-compare_increase%>%
+  mutate(misaligned_diff= operating_revenue_in_rate - cardholders_in_rate)%>%
+  filter(misaligned_diff<0)%>%
+  arrange(misaligned_diff)
+
+#list of libraries that require an increase in the operating revenue:
+head(libraries_need_increase)
+
+nrow(libraries_need_increase)
+#There are 60 libraries where their growth rate of active cardholders does not align with their corresponding growth rate of operating revenue.
+
+misalignment_percent<-percent(nrow(libraries_need_increase)/nrow(selected_libraries_cardholders[selected_libraries_cardholders$survey_year=='2022',])*100)
+misalignment_percent
+# 20.07% of Ontario libraries is suggested to increase their operating revenue.
+
+
+#apply  distribution statistics:
+summary(libraries_need_increase$misaligned_diff)
+
+#plot shows the misalignment Degree Versus Number of Libraries with mismatch rate:
+libraries_need_increase %>% 
+  mutate(misalignment=abs(misaligned_diff))%>%
+  ggplot(aes(x=misalignment))+geom_histogram(fill='cyan4')+
+  labs(title='Misalignment Degree Versus the Count of Libraries',
+  subtitle='Libraries with growth rate of active cardholders not aligned with their growth rate of the operating revenue.', 
+  x='Misalignment Degree',
+  y='Count of Libraries')+
+  theme_minimal()
+
+#Tidy data to join misaligned_diff column which represent the misalignment degree. and create a categorical column to distinguish between libraries that need increase and other libraries.
+in_libraries<-selected_libraries_cardholders%>%
+  left_join(libraries_need_increase, by='library_number')%>%
+  mutate(suggest_increase=ifelse(misaligned_diff<0,'Yes','NO'))
+
+in_libraries$suggest_increase <- ifelse(is.na(in_libraries$suggest_increase), 'No', in_libraries$suggest_increase)
+in_libraries$suggest_increase=as.factor(in_libraries$suggest_increase)
+
+#plot shows the proportion of libraries with misalignment rate over libraries reveal increases their rate  (2022)
+in_libraries%>% filter(survey_year=='2022')%>%
+  ggplot(aes(x=factor(1),fill=suggest_increase))+ 
+    geom_bar(width = 1, position = "fill")+
+  labs(title='proprtion of libraries with misalignment rate over other libraries',
+       subtitle = 'libraries with a suggestion to increase their operating revenue',
+       x='Libraries with misalignment rate and other libraries',
+       y='proportion')+
+  scale_fill_manual(values = c("cyan3","tomato1"))+
+  theme_minimal()+
+  geom_text(aes(label='20.07%',x=1, y=0.15))
+  
+
+
+#The active card holders of these libraries increased but the operating revenue either decreased or did not increase with the same rate of the increasing of card holder.
+
+#invest more on those libraries who active card holders increased.
+```
+60 libraries with card holders exhibit a discrepancy between the growth rate of their active cardholders and the corresponding growth rate of their operating revenue. The growth rate is measured between 2022 and 2015. A suggestion is to increase the operating revenues for these libraries to match this misalignment.  
+  
+  
+    
+<br>
+<br>
+<br>
+
+
+
+
+## Insight3: Within the selected dataset of Ontario libraries, it is observed that 55.08% have (total operating revenue / active cardholder) falling within the range of (100 to 250), and among these, 92.12% have electronic materials. In this dataset, spanning the specified range, there have been notable increases in the averages: operating revenue per total cardholder by 10.90%, electronic materials by 32.94%, and e-circulation by 174.97%.
+
+```{r}
+#INSIGHT2
+#I'm interested in the change of the mean of operating revenue/ active card holders, the change of mean of the number of e_material and the change of the mean of e_circulation over years(2015-2022) of the selected libraries (with e_materials)
+
+# In general the percentage of libraries with no e_material is:
+no_e<-metric_library%>% filter(e_material==0)
+percentage_libraries_no_ematerials<-nrow(no_e)/nrow(metric_library)*100
+percent(percentage_libraries_no_ematerials)
+
+
+#To select libraries I did the following:
+# 1.select libraries with metric(revenue/active card holders) in the  most common range (Identify the Dominant Data Range).
+# 2.select libraries with e_materials from the previous selection
+
+
+# 1.select libraries who's metric(revenue/active card holders) in the most common range of revenue/ active card holders:
+
+#explore metric_column after active_cardholders>0:
+metric_library_ch<- metric_library %>% 
+  filter(active_cardholders>0)
+
+
+view(head(sort(metric_library_ch$revenue_cardholders, decreasing =T)))
+#48961.5000 is an extreme value
+
+summary(metric_library_ch$revenue_cardholders)
+
+#visual metric column 
+metric_library_ch %>%
+  ggplot(aes(x=revenue_cardholders))+
+  geom_histogram(binwidth = 100, fill='cyan4')+
+  labs(title=' Revenue/ cardholdres Versus Count',
+    x='Total Operating Revenue/ Active Card Holders')+
+  theme_minimal()
+
+#zoom in after removing outliers (removing libraries with revenue/active card holders > 1000):
+re_metric_library_ch<- metric_library_ch %>% 
+filter(revenue_cardholders<1000)
+
+re_metric_library_ch%>%
+ggplot(aes(x=revenue_cardholders))+
+geom_boxplot()+
+geom_histogram(binwidth = 20, fill= 'cyan4')+
+theme_minimal()+
+labs(title=' Revenue/ cardholdres Versus Count',
+     x='Total Operating Revenue/ Active Card Holders')
+
+#the distribution is skewed to the right. 
+summary(re_metric_library_ch$revenue_cardholders)
+
+# choose libraries with revenue/active card holders in the range of (100-250) for this insight.
+selected_libraries_rc<-metric_library_ch%>%
+  filter( revenue_cardholders>100&revenue_cardholders<250)
+
+
+Percentage_selected_libraries<-(nrow(selected_libraries_rc)/nrow(metric_library_ch))*100
+percent(Percentage_selected_libraries)
+#55.08% of Ontario libraries have revenue/card holders in the range of (100_250) from 2011 to 2022
+
+
+# 2.select libraries with e_materials from the previous selection:
+#I'm interested in the change of the number of e_material and number of e_circulation over years(2015-2022) of the selected libraries.
+
+# choose libraries with e_materials:
+selected_libraries_rc_e<-selected_libraries_rc%>% 
+  filter(e_material>0)
+
+(nrow(selected_libraries_rc_e)/nrow(selected_libraries_rc))*100
+#92.12% of the selected libraries have e_materials.
+
+(nrow(selected_libraries_rc_e)/nrow(metric_library_ch))*100
+#50.73% of Ontario libraries with (operating revenue/ active card holders) in the range of (100-250) and has e_materials.
+
+
+#change the type to numeric
+selected_libraries_rc_e$e_material<-as.numeric(selected_libraries_rc_e$e_material)
+selected_libraries_rc_e$E_circulation<-as.numeric(selected_libraries_rc_e$E_circulation)
+selected_libraries_rc_e$material<-as.numeric(selected_libraries_rc_e$material)
+selected_libraries_rc_e$not_e_circulation<-as.numeric(selected_libraries_rc_e$not_e_circulation)
+selected_libraries_rc_e$total_circulation<-as.numeric(selected_libraries_rc_e$total_circulation)
+
+
+#remove outliers from e_material
+summary(selected_libraries_rc_e$e_material)
+#remove all libraries that has e_material bigger than 2500000
+rm_outliers_ematerial<-selected_libraries_rc_e%>% filter(e_material<2500000)
+
+#remove outliers from e_circulation
+summary(selected_libraries_rc_e$E_circulation)
+#remove all libraries that has e_material bigger than 50000
+rm_outliers_ecirculation<-rm_outliers_ematerial%>% filter(E_circulation<50000)
+
+
+rm_outliers_ecirculation%>%
+  ggplot(aes(x=e_material, y=E_circulation))+
+  geom_point(color='cyan4')+
+  geom_smooth(se=F, color='tomato3')+
+  theme_minimal()+
+  labs(title='Correlation between E_material and E_circulation',
+       x= 'E_material',
+       y='E_circulation',
+       subtitle='Libraries with operating revenue/ active card holder in the range of (100-250)' )
+
+#correlation:
+cor(rm_outliers_ecirculation$e_material,rm_outliers_ecirculation$E_circulation)
+#There is a strong positive correlation between e_material and e_circulation
+
+
+#create a new table to combine the mean of (revenue/card holders,e_material and e_circulation) by years 
+means_table<- selected_libraries_rc_e%>% 
+  group_by(survey_year)%>% 
+  summarise(metric_mean=mean(revenue_cardholders),
+            e_material_mean=mean(e_material, na.rm = T),
+            e_circulation=mean(E_circulation,na.rm = T))
+means_table
+# Explore each column:
+
+##1 Between 2015 to 2022 the increase of the mean of operating revenue/active card holders:
+avg_metric_in<-percent(((max(means_table$metric_mean)-min(means_table$metric_mean))/min(means_table$metric_mean))*100)
+avg_metric_in
+#Between 2015 to 2022 there was an increase of 10.90% of the mean of the operating revenue/active card holders 
+
+##2 Between 2015 to 2022 the increase of the mean of the e_materials:
+avg_e_material_in<-
+percent(((max(means_table$e_material_mean)-min(means_table$e_material_mean))/min(means_table$e_material_mean))*100)
+avg_e_material_in
+#Between 2015 to 2022 there was an increase of 32.94% in the mean of e_materials.
+
+##3 Between 2015 to 2022 the increase of the mean of E_circulation:
+avg_e_circulation_in<-percent(((max(means_table$e_circulation)-min(means_table$e_circulation))/min(means_table$e_circulation))*100)
+avg_e_circulation_in
+#Between 2015 to 2022 there was an increase of 174.97% in the mean of E_circulation by
+
+#2020 and 2021 are covid years, that may effect the results
+# in general there are significant increase of e_circulation 
+
+
+#From 2015-2022, there are increases in the mean of:  the operating revenue/ total card holders by 10.90% , the Electronic material by  32.94% and the e_circulation by 174.97%.
+increasd_mean<-data.frame(increased_metric= avg_metric_in, increased_e_material=avg_e_material_in,increased_e_circulations=avg_e_circulation_in)
+increasd_mean
+```
+The distribution of the metric (operating revenue per cardholder) reveals substantial variability. The data was specifically chosen from the most common range of this metric. Over the period from 2015 to 2022, we observed increases in the averages of: operating revenue per total cardholder by 10.90%, electronic materials by 32.94%, and e-circulation by 174.97%.  
+  
+  
+<br> 
+<br>
+<br>
+    
+
+
+
+
+# Recommended Actions:
+
+Based on these three insights, to improve the equality of access (total operating revenue / active cardholder) over Ontario libraries, the following actions are recommended:
+
+Further analysis is necessary to understand the expenditures associated with the operating revenue for libraries that exhibit an absence of active cardholders.
+
+Increase the operating revenue for libraries that demonstrate a misalignment between the increasing rate of active cardholders and the increasing rate of operating revenues.
+
+
+Additional analysis is required to comprehend the wide variety and extreme values of operating revenue/active cardholder, to ensure equality of access.
+
+Invest more in Electronic materials as an important resource of digital information in the 21st century to evolve the users needs and technological advancements.
+
+[^note]: This column represent number of physical materials
+[^note]: This column represent number of Electronic materials
+
