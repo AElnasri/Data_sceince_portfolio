@@ -1,7 +1,6 @@
 # Data_science_portfolio
 A collection showcasing my journey in data science academic projects, self-learning initiatives, and passion-driven explorations. Dive into the world of data insights through R markdown files and through Jupyter notebooks .
 
-
 #  Ontario Libraries Insights:
 ## Introduction
 
@@ -10,6 +9,7 @@ In the 21st century, Ontario libraries are faced with the challenge of ensuring 
 The number of active card holders is an important factor in measuring the equity of access.
 The first insight underscores instances where libraries exhibit an absence of active cardholders. The second finding highlights libraries in which the growth rate of active cardholders does not align with the corresponding growth rate of operating revenue. As Electronic materials an important resource of digital information in the 21st, the last insight reveals the increase of the metric and the corresponding increase in number of the electronic materials (e_material) and number of E_circulations.  
 
+R Programming language was used to ingest and clean data, analyze it to uncover insights and lastly, communicate those insights.
 
 ## Data selection 
 
