@@ -65,11 +65,11 @@ Invest more in Electronic materials as an important resource of digital informat
 # 2. Simple Linear Regression:
 Title: Applying Simple Linear Regression to Salary Dataset
 
-Introduction:
+## Introduction:
 
 In this project, I applied simple linear regression to a salary dataset to explore the relationship between years of experience and salary. The dataset contains 30 observations with two columns: Years of Experience and Salary. I utilized the linear regression model to analyze and visualize the relationship between these variables.
 
-Dataset:
+## Dataset:
 
 The dataset used for this analysis can be accessed from Kaggle: https://www.kaggle.com/code/iamravi1/salary-data/input
 Methodology:
@@ -81,7 +81,7 @@ Methodology:
    5. Model Analysis: I analyzed the coefficients of the linear regression model to understand the relationship between the predictor and the response variable. 
    Additionally, I evaluated the model's performance using metrics such as RMSE.
 
-Results:
+## Results:
 
 The linear regression analysis revealed a significant positive relationship between years of experience and salary. 
 The coefficient of the predictor variable (years of experience) was found to be 9152.3 , indicating that, on average, for each additional year of experience, the salary increased by 9152.3 units.
@@ -97,28 +97,43 @@ This analysis can be valuable for organizations in making decisions related to e
 
 
 Logistic Regression:
-# 3. Titanic Logistic Regression Model
+# 3.Titanic Survival Prediction
 
-This repository contains the code and analysis for applying a logistic regression model to the Titanic dataset.
+This code is to build a logistic regression model to predict survival in the Titanic dataset. The analysis is conducted in R using an R Markdown (Rmd) file.
+Dataset
+
+The Titanic dataset contains information about passengers aboard the Titanic, including features such as age, sex, ticket class, and whether or not they survived the sinking of the ship.
+Workflow
+
+  ## Data Preparation:
+  The dataset is loaded and preprocessed. Missing values are handled, and relevant features are selected for modeling.
+
+  ## Model Building: 
+  Logistic regression models are built to predict survival. The dataset is divided into training and validation sets. Two models are trained using different sets of features.
+
+  ## Model Evaluation:
+  Both models are evaluated using the validation set. Performance metrics such as accuracy are calculated to assess the models' predictive power.
+
+  ## Model Selection: 
+  The model with the highest accuracy on the validation set is selected for further analysis.
+
+  ## Model Application:
+  The selected model is then applied to new data to predict survival probabilities.
 
 ## Files
 
-- Titanic_Logistic_Regression.RMD : R Markdown file containing the code, analysis, and results.
-- "https://www.kaggle.com/code/daodao32/logistic-regression-for-titanic-dataset/input?select=gender_submission.csv": The Titanic dataset used in the analysis.
+    titanic_survival_prediction.Rmd: The R Markdown file containing the analysis code, including data preprocessing, model building, evaluation, and application.
+    titanic.csv: The Titanic dataset used in the analysis.
 
 ## Usage
 
 To reproduce the analysis:
 
-1. Open `Titanic_Logistic_Regression.RMD` in RStudio or your preferred R environment.
-2. Run the code chunks to execute the logistic regression model and generate results.
-3. Explore the analysis and results within the R Markdown document.
+    Clone this repository to your local machine.
+    Open titanic_survival_prediction.Rmd in RStudio or any other R Markdown-compatible editor.
+    Run the code chunks sequentially to reproduce the analysis step by step.
+    Explore the results and modify the code as needed.
 
-Feel free to fork this repository or use the code for your own projects.
 
-## Results
+The selected logistic regression model achieved an accuracy of 78.85% on the validation set, demonstrating its predictive ability in determining survival on the Titanic.
 
-You can view the rendered R Markdown 
-## Notes
-
-- Make sure to have the necessary R packages installed (specified in the R Markdown file).
