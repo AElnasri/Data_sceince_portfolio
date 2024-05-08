@@ -1,0 +1,181 @@
+---
+title: "Assignment4LogReg"
+author: "Arwa Elnasri"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+ 
+# # Upload libraries
+```{r}
+library(ggplot2)
+library(caret)
+library(tidyverse)
+library(corrplot)
+library(readr)
+
+
+
+```
+
+# # Upload data
+```{r}
+setwd("C:/Users/arwae/OneDrive/Documents/Machine learning/Supervised_learning/Logistic-Reg/Assignment4logisticReg")
+
+log_data<-read_csv("train.csv")
+test_data<-read_csv("test.csv")
+
+
+```
+# # Clean data
+```{r}
+#check if any column has any missing values
+apply(log_data, 2, function(x) any(is.na(x)))
+apply(test_data, 2, function(x) any(is.na(x)))
+
+head(log_data)
+
+#will delete Cabin column from both data
+log_data$Cabin <- NULL
+test_data$Cabin <- NULL
+
+# Age in both data has missing values,Since there are too many Nas, will fill them with the mean of the age.
+log_data$Age[is.na(log_data$Age)]<- mean(log_data$Age, na.rm = T)
+test_data$Age[is.na(test_data$Age)]<- mean(test_data$Age, na.rm = T)
+
+# Embarked in log_data and  Fare in the test_data have a few missing values, will delete them
+# Delete Nas from Embarked in log_data
+log_data[complete.cases(log_data$Embarked), ]
+
+# Delete Nas from Fare in test_data
+test_data[complete.cases(test_data$Fare), ]
+
+```
+
+#checking data type and data conversion 
+```{r}
+str(log_data)
+str(test_data)
+
+# Convert "Survived", "Pclass", "Sex" and "Embarked" to factor data type
+log_data[,c(2, 3, 5,11)] <- lapply(log_data[,c(2, 3, 5, 11)], factor)
+test_data[, c(2, 4, 10)] <- lapply(test_data[,c(2, 4, 10)], factor)
+
+str(log_data)
+str(test_data)
+```
+#Explore the data
+```{r}
+(prop.table(table(log_data$Survived, log_data$Sex),2)*100)
+
+log_data %>% 
+  ggplot(aes(Survived, fill=Sex))+
+  geom_bar()+
+  theme_minimal()+
+  labs(title="survived vs Sex")
+
+set.seed(123)
+log_data %>%
+  ggplot(aes(Age,Survived, col=Sex))+
+  geom_jitter(height = 0.1)+
+  labs(title = " Age vs survived in Titanic")
+
+
+```
+## 74.2% of women survived, while only 18.89% of male suvived. Age had a minimum affect on suvival with the exception of young children. 
+
+
+
+# Select variables
+```{r}
+# Select:  "Survived", "Pclass",  "Sex",    "Age",  "SibSp", "Parch","Fare" and "Embarked"  
+log_data_selected <- log_data[, c(2,3,5,6,7,8,10,11)]
+
+```
+# Split data
+```{r}
+set.seed(123)
+spliting_index <- createDataPartition(log_data_selected$Survived, p=0.8, list = FALSE)
+train_data <- log_data_selected[spliting_index, ]
+validating_data <- log_data_selected[- spliting_index, ]
+
+## check that the proportion is similar
+prop.table(table(train_data$Survived))
+prop.table(table(validating_data$Survived ))
+```
+
+# Apply logistic regression and Analyze the model (MODEL1)
+```{r}
+log_model1 <- glm(train_data$Survived ~., train_data, family = binomial)
+
+summary(log_model1)
+```
+# # interpretations of coefficients:
+AIC= 640.9
+
+1. Sexmale is negative (reference : female) indicating that being male decrease the probability of survival compare to female.
+2.Pclass has 3 levels. Pclass3 is negative (reference : Pclass1) indicating that being in Pclass3 decrease the probability of survival compare to Pclass1.
+3. Age is negative indicating that being older decrease the probability of survival.
+4.Embarked, Parch and Fare have Pr(>|z|)> 0.05 indicating that they are not significant in predicting the probability.
+
+# Analyze the accuracy of MODEL1
+```{r}
+predict_log1<- predict(log_model1, type="response", validating_data)
+
+validating_data$predicted1<- as.numeric(predict_log1>= 0.5)
+table(validating_data$Survived, validating_data$predicted1)
+model_accuray<- (93+45)/(93+45+16+21)*100
+model_accuray
+```
+# # Model1 acuray is 78.85%
+
+
+
+# Model 2 after reselect the variables
+```{r}
+#remove Embarked, parch and Fare from train data
+remove_var<- c("Embarked","Fare", "Parch","SipSP")
+train_data_2 <- train_data[,!names(train_data) %in% remove_var]
+validating_data_2 <- validating_data[,!names(validating_data) %in% remove_var]
+
+log_model2 <- glm(train_data_2$Survived ~., train_data_2, family = binomial)
+
+summary(log_model2)
+
+```
+# Apply model2 to test data
+```{r}
+predict_log2<- predict(log_model2, type="response", validating_data_2)
+
+validating_data_2$predicted2<- as.numeric(predict_log2>= 0.5)
+#View(validating_data)
+```
+
+
+# Analyze the accuracy of the model2
+```{r}
+table(validating_data_2$Survived, validating_data_2$predicted2)
+model2_accuray<- (93+44)/(93+44+16+24)*100
+model2_accuray
+
+#WILL STICK TO MODEL1 AS IT MORE ACCURATE
+
+```
+Model2 acuray is 77.40%
+WILL STICK TO MODEL1 AS IT IS MORE ACCURATE
+
+
+# apply to test data , analyze and outout in the requirment format
+```{r}
+predict_test <- predict(log_model1, type="response", newdata= test_data)
+
+test_data$predcted_survived <- as.numeric(predict_test> 0.5)
+Titanic_predictions = data.frame(test_data[c("PassengerId","predcted_survived")])
+write.csv(file = "TitanicPred", x = Titanic_predictions)
+
+```
+
+
