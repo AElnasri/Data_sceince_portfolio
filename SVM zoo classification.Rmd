@@ -1,0 +1,178 @@
+---
+title: "Assignmentsvm"
+author: "Group"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries
+```{r}
+library(readxl)
+library(e1071)
+library(tidyverse)
+library(ggplot2)
+library(caret)
+```
+
+# Upload data
+```{r}
+setwd("C:/Users/arwae/OneDrive/Documents/Machine learning/Supervised_learning/SVM/svm_data")
+zoo <- read.csv("zoo.csv")
+head(zoo)
+str(zoo)
+class_data<- read.csv("class.csv")
+head(class_data)
+str(class_data)
+
+```
+
+# add class to zoo data
+```{r}
+
+colnames(class_data) <- c("class_type", 
+                          "no_of_animal_species_in_class", 
+                          "class_name", 
+                          "animal_name"
+)
+
+class_data <- class_data %>%
+  select(class_type, class_name)
+
+
+zoo_data <- zoo %>% 
+  left_join( class_data, by = "class_type") 
+ 
+  
+head(zoo_data)
+
+```
+
+
+# Data cleaning
+```{r}
+any(is.na(zoo_data))
+# There is no missing values
+```
+
+# Data conversion
+```{r}
+str(zoo_data)
+summary(zoo_data)
+
+# Convert into categorical data except class_name
+zoo_data[,-1]<- lapply(zoo_data[ ,-1], factor)
+
+
+
+
+# Count the number of unique values for each variable in the log_data dataframe
+sapply(zoo_data, function(x) length(unique(x)))
+
+
+```
+
+#plot the outcome variable
+```{r}
+zoo_data%>% 
+  ggplot(aes(class_name, fill=class_name ))+
+  geom_bar()+
+  labs(title="Class Names VS Count in Zoo Data",
+       x=" Class Name",
+       y= "Count")+
+  theme_minimal()
+
+
+
+```
+
+
+# Build classification model
+## Divide zoo_data into Train and test 
+
+```{r}
+str(zoo_data)
+# Select integer variables
+zoo_data_selected <- zoo_data %>%
+  select(-animal_name, -class_name)
+
+set.seed(123)
+data_partition <- createDataPartition(y=zoo_data_selected$class_type, p=0.7, list=F)
+zoo_train <- zoo_data_selected[data_partition,]
+zoo_test <- zoo_data_selected[-data_partition,]
+
+cat("----- Training batch ------")
+table(zoo_train$class_type)
+
+cat("----- Testing batch -----")
+table(zoo_test$class_type)
+
+
+```
+
+
+
+# Tune to select c and gamma
+```{r}
+
+# Here I tried to apply the same function in Shaila DASH WORKSHOP but it doesn't work
+# maybe someone could figure out why? and fix it
+set.seed(3409)
+tune.obj <- tune.svm(class_type~., data = zoo_train, gamma = 2^(-1:1), cost = 2^(2:4))
+
+summary(tune.obj)
+plot(tune.obj)
+
+#select c and gamma that give us the least error
+
+```
+Select cost= 4 and gamma =0.5 as these values generate the lowest error
+we will need a non-linear kernel to specify the model. We will be using the radial kernel 
+# Build SVM model
+```{r}
+
+# Using radial kernel support vector classifier.
+
+svm_model <- svm(class_type ~ ., 
+                 data=zoo_train,
+                 kernel = "radial",
+                 cost= 4,
+                 gamma= 0.5,
+                 probability = TRUE)
+
+
+
+
+summary(svm_model)
+
+
+```
+
+# Predict class type in test data
+```{r}
+
+# predicting class type in test data based on the training model
+
+zoo_test$predicted <- predict(svm_model, zoo_test)
+head(zoo_test)
+```
+
+# Chech the accuracy of the model
+```{r}
+# Confusion matrix
+con_matrix <- confusionMatrix(zoo_test$class_type, zoo_test$predicted)
+print(con_matrix)
+
+```
+ The model has 49 support vectors.
+
+In the confusion matrix, The model was able to classify all the animals correctly except one in class 3 which represent Reptile , resulting in an accuracy of 96.43%. 
+
+
+
+
+
+
