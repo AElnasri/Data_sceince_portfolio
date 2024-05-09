@@ -5,7 +5,7 @@ Projects in this folder are:
 1. Ontario Libraries Insights.
 2.  Simple Linear Regression.
 3. Titanic Logistic Regression Model.
-
+4. SVM Support Vector Machine Classification to classify zoo data
 
 
 #  1. Ontario Libraries Insights:
@@ -134,6 +134,52 @@ To reproduce the analysis:
     Run the code chunks sequentially to reproduce the analysis step by step.
     Explore the results and modify the code as needed.
 
-
+## Result
 The selected logistic regression model achieved an accuracy of 78.85% on the validation set, demonstrating its predictive ability in determining survival on the Titanic.
+
+
+# 4.SVM Classification for Animal Classification
+
+This  contains an RMD code that utilizes Support Vector Machine (SVM) classification to predict the classification of animals based on various traits described in the dataset.
+Dataset Description
+
+The dataset used for this project consists of 101 animals from a zoo, with 16 variables describing different traits of the animals. The dataset includes information on 7 class types: Mammal, Bird, Reptile, Fish, Amphibian, Bug, and Invertebrate.
+
+Two files are included in the dataset:
+
+    Zoo.csv: Contains attribute information for each animal.
+    Class.csv: Describes the dataset, including class numbers, class types, and the list of animals in each class.
+
+## Dataset Source:
+Kaggle – SVM Classification: https://www.kaggle.com/code/sriharshabs/svm-classification/data
+
+## Instructions
+To use the SVM classification for animal classification:
+
+    Download or clone the repository to your local machine.
+    Ensure you have R installed. If not, download and install it from the official R website.
+    Install required packages by running install.packages(c("e1071", "caret")) in your R environment.
+    Open the R script svm_classification.R provided in the repository.
+    Modify the script as needed or run it directly to predict animal classifications.
+    Ensure the Zoo.csv and Class.csv files are in the same directory as the script or provide the correct paths to these files within the script.
+    Execute the script in your R environment.
+
+## Usage
+
+The SVM classification code performs the following tasks:
+
+    Data loading and preprocessing.
+    Training the SVM model using the provided dataset.
+    Evaluating the model's performance.
+    Predicting animal classifications based on the input variables.
+
+## Result:
+The model was able to classify all the animals correctly except one in class 3 which represent Reptile , resulting in an accuracy of 96.43%. 
+
+
+Feel free to explore and modify the script according to your requirements.
+License
+
+This project is licensed under the MIT License.
+
 
