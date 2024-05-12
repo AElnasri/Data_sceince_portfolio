@@ -1,0 +1,192 @@
+---
+title: "K_mean Clustering"
+author: "Arwa Elnasri"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+ 
+# upload libraries
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+
+```
+
+# Upload protein data
+```{r}
+protein <- read_csv("~/Machine learning/Unsupervised_learning/K-mean clustering/protein.csv")
+head(protein)
+```
+
+How many ckuster should we have?
+# Elbow method:
+```{r}
+# Select numeric variables and scale them
+protein_n<- protein%>% select(-Country)
+scaled_p<- scale(protein_n, center= T, scale=T)
+
+# Apply Elbow moethod
+set.seed(111)
+wcss <- NULL
+for(i in 1:10) {
+  fit = kmeans(scaled_p, centers = i)
+  wcss = c(wcss, fit$tot.withinss)
+}
+plot(1:10, wcss, type="o")
+```
+From the Elbow graph, the line in not ideal, there are more than one point where the rate of decrease in WCSS slows down abruptly, forming an "elbow" shape in the plot. For my personal judge, I will select 5 cluster, however it's as school Assignment with previous requirement.
+In this Assignment, we are required to build two models, the first model using 3 clusters based on White meat and Red meat consumption. The second model is building a K_means clustering model to cluster European countries into seven groups based on nine protein consumption.
+
+
+# First: Select Red and White meat
+K_means clustering is used to cluster European countries into three groups
+based on White meat and Red meat consumption.
+Start by clustering the Red and White meat (p=2) and using 3 clusters (k=3)
+
+```{r}
+protein_rw<- protein %>%
+  select(WhiteMeat, RedMeat)
+
+
+# Scale data
+scaled_rw<- scale(protein_rw, center= T, scale=T)
+
+# Cluster into 3 groups using k_means
+set.seed(1234)
+result_rw<- kmeans(scaled_rw, 3)
+```
+
+#  Extract some of the information from the fitted model
+```{r}
+result_rw
+# clusters vector:
+result_rw$cluster
+
+# Clusters means:
+result_rw$centers
+
+# Size of each group
+result_rw$size
+```
+
+# prepare for visualization
+```{r}
+# Add Country and cluster columns to scaled data after change scaled to data frame format
+df_scaled_rw<-as.data.frame(scaled_rw)
+df_scaled_rw$country<- protein$Country
+df_scaled_rw$cluster<- as.factor(result_rw$cluster)
+
+#change centers to data frame format
+cluster_centers<-as.data.frame(result_rw$centers)
+
+# visualize K_means Clustering for Protein data For White Meat and Red Meat protein
+
+df_scaled_rw %>% ggplot(aes(WhiteMeat, RedMeat, color=cluster))+
+  scale_color_manual(values = 4:6)+             # each cluster in different color
+  geom_point()+                                #Add scatter plot
+  geom_text(aes(label=country))+              # Add country names
+  geom_point(data= cluster_centers, aes(x=WhiteMeat, y= RedMeat,),
+             color=4:6,
+             shape=4, size=4)+
+ labs(title= "Kmeans Clustering for Protein data",
+             subtitle ="For White meat and Red meat",
+             x="White Meat",
+             y=" Red meat")   # add labels
+```
+
+
+
+# Results Analysis:
+' K_means clustering is used to cluster European countries into three groups
+-based on White meat and Red meat consumption.
+The first group (France, UK...) has high consumption of Red meat and middle consumption of white meat.
+-Both UK and France have rich culinary traditions that include a variety of meat-based dishes. In these countries, certain red meats, such as beef and lamb, are commonly featured in traditional dishes and cuisine. 
+The other cluster (Netherlands, Austria...) includes countries with high white meat consumption compare to red meat
+That could be due to the availability and affordability of white meat in these countries.
+The third cluster includes countries with low to average white and red meat consumption.
+
+
+
+
+# Secound: Cluster all nine protein groups and prepare the program to create seven clusters
+select nine protein groups
+```{r}
+protein_all <- protein %>% 
+  select(-Country)
+
+# scale nine protein
+scaled_all<- scale(protein_all, center=T, scale = T)
+
+# cluster into seven groups using k_means
+set.seed(1234)
+result_all<- kmeans(scaled_all, 7)
+```
+
+#  Extract some of the information from the fitted model
+```{r}
+result_all
+# clusters vector
+result_all$cluster
+
+# clusters means:
+result_all$centers
+```
+
+# prepare for visualization:
+```{r}
+# add country column and cluster to scaled data after change it to data frame format
+# Change scaled_all to data frame format
+df_scaled_all<- as.data.frame(scaled_all)
+
+# add Country to data
+df_scaled_all$country<-protein$Country
+
+# add cluster to data and change it factor
+df_scaled_all$cluster<- as.factor(result_all$cluster)
+
+# change center to data frame format
+all_center<- as.data.frame(result_all$centers)
+
+# visualize K_means Clustering for Protein data For all nine protein white meat vs red meat
+df_scaled_all %>% ggplot(aes(WhiteMeat, RedMeat, color= cluster),)+
+  scale_color_manual(values = 1:7)+
+  geom_point()+
+  geom_text(aes(label=country))+
+  geom_point(data=all_center, aes(x=WhiteMeat, y= RedMeat),
+             color=1:7, size=4
+             , shape=4)+
+  labs(title= "Kmeans Clustering for Protein data",
+       subtitle ="For all nine protein",
+       x="White Meat",
+       y=" Red meat")
+
+# plot Different variables  Eggs vs milk
+df_scaled_all %>% ggplot(aes(x= Eggs ,y= Milk, color= cluster),)+
+  scale_color_manual(values = 1:7)+
+  geom_point()+
+  geom_text(aes(label=country))+
+  geom_point(data=all_center, aes(x= Eggs , y= Milk),
+             color=1:7, size=4
+             , shape=4)+
+  labs(title= "Kmeans Clustering for Protein data",
+       subtitle ="For all nine protein",
+       x=" Eggs ",
+       y="Milk")
+```
+
+  
+# Results Analysis:
+' K_means clustering is used to cluster European countries into seven groups
+based on nine protein consumption.
+The last visualization visualize the seven clusters on a scatter plot of Eggs against Milk
+Finland has high Milk consumption. Finland has a strong agricultural sector, 
+and dairy farming is well-established.
+The availability and quality of locally produced dairy products may influence consumption patterns. 
+Ireland and UK have high eggs consumption. Eggs are a staple in traditional British and Irish breakfasts.
+The "Full English Breakfast" and the "Full Irish Breakfast" typically include eggs as a key component,
+contributing to the cultural and dietary importance of eggs in the morning meal'
