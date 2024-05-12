@@ -6,6 +6,8 @@ Projects in this folder are:
 2.  Simple Linear Regression.
 3. Titanic Logistic Regression Model.
 4. SVM Support Vector Machine Classification to classify zoo data
+5. 5.K-means Clustering Analysis of European Protein Consumption
+
 
 
 #  1. Ontario Libraries Insights:
@@ -179,6 +181,45 @@ The model was able to classify all the animals correctly except one in class 3 w
 
 Feel free to explore and modify the script according to your requirements.
 License
+
+This project is licensed under the MIT License.
+
+
+# 5.K-means Clustering Analysis of European Protein Consumption
+This rmd file code and analysis for a K-means clustering assignment focusing on European protein consumption. The assignment requires clustering 25 European countries based on their protein intakes from nine major food sources. Additionally, two separate models are built: one with 3 clusters based on White meat and Red meat consumption, and another with 7 clusters based on overall protein consumption.
+
+## Dataset Description
+The dataset used for this assignment consists of protein intake data for 25 European countries. There are 9 major food sources considered for protein intake, making it a matrix of 25 rows (countries) and 9 columns (food sources).
+
+## Choosing the Number of Clusters
+For this assignment,  we are required to build two models, the first model using 3 clusters based on White meat and Red meat consumption. The second model is building a K_means clustering model to cluster European countries into seven groups based on nine protein consumption.
+For personal exploration, I used elbow method  to determine the optimal number of clusters. However, due to the absence of a clear "elbow" point in the plot, a subjective judgment was made. After personal evaluation, I think that 5 clusters is best choice. 
+
+## Models Built
+
+    Model 1: Clustering based on White meat and Red meat consumption
+        This model clusters the 25 European countries into 3 groups based on their consumption of White meat and Red meat.
+
+    Model 2: Clustering based on overall protein consumption
+        This model clusters the 25 European countries into 7 groups based on their consumption of protein from nine major food sources.
+
+## Repository Structure
+
+    data/: Contains the dataset used for analysis.
+    scripts/: Contains R scripts used for data preprocessing, model building, and analysis.
+    results/: Contains the results of the clustering analysis, including visualizations and summary statistics.
+
+## How to Use
+
+To replicate the analysis:
+
+    Download or clone the repository to your local machine.
+    Ensure you have R installed. If not, download and install it from the official R website.
+    Open the R scripts provided in the scripts/ directory.
+    Modify the scripts as needed or run them directly to perform the clustering analysis.
+    Explore the results in the results/ directory.
+
+## License
 
 This project is licensed under the MIT License.
 
